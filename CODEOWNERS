@@ -1,0 +1,24 @@
+# Default owner
+* @shayar
+
+# API and orchestration
+/api/ @shayar
+
+# Safety and maturity gate
+/api/app/safety/ @shayar
+/docs/SAFETY_AND_MATURITY.md @shayar
+
+# Runtime and C++ notes
+/api/app/runtime/ @shayar
+/cpp/ @shayar
+/scripts/ @shayar
+
+# Docs and governance
+/docs/ @shayar
+CONTRIBUTING.md @shayar
+CODE_OF_CONDUCT.md @shayar
+SECURITY.md @shayar
+LICENSES.md @shayar
+
+# GitHub workflows and templates
+/.github/ @shayar

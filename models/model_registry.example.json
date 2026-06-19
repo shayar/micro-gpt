@@ -1,0 +1,17 @@
+{
+  "models": [
+    {
+      "model_id": "qwen3-0.6b-gguf-local",
+      "name": "Qwen3 0.6B GGUF local file",
+      "runtime": "llama_cpp",
+      "path": "qwen3-0.6b-q4_k_m.gguf",
+      "license": "Apache-2.0 candidate - revalidate exact model card before release",
+      "source": "https://huggingface.co/Qwen/Qwen3-0.6B-GGUF",
+      "revision": "pin-exact-revision-before-release",
+      "quantization": "Q4_K_M example placeholder",
+      "context_length": 32768,
+      "status": "candidate",
+      "notes": "Do not commit the GGUF file. Copy this file to model_registry.local.json and update path/revision after downloading a validated local model."
+    }
+  ]
+}

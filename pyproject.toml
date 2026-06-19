@@ -1,10 +1,10 @@
 [project]
 name = "microgpt-local"
-version = "0.1.0"
-description = "MicroGPT Local Cognitive Engine Phase 1 starter"
+version = "0.2.0"
+description = "MicroGPT Local Cognitive Engine Phase 2 starter"
 readme = "README.md"
 requires-python = ">=3.11"
-license = { text = "MIT" }
+license = "MIT"
 authors = [
   { name = "Shayar Shrestha" }
 ]
@@ -20,6 +20,9 @@ dev = [
   "pytest>=8.4,<9.0",
   "httpx>=0.28,<1.0"
 ]
+llama = [
+  "llama-cpp-python>=0.3.9,<0.4.0"
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -27,3 +30,7 @@ pythonpath = ["."]
 
 [tool.ruff]
 line-length = 100
+
+[tool.setuptools.packages.find]
+include = ["microgpt*"]
+exclude = ["data*", "models*", "vault*", "docs*", "tests*", "scripts*", "cpp*", "julia*", "evals*", "datascience*"]

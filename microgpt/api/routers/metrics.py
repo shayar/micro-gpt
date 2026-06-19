@@ -13,4 +13,5 @@ def metrics(_: dict = Depends(require_admin)) -> dict:
         "audit_events_last_100": len(event_store.read_stream("audit_events", limit=100)),
         "safety_events_last_100": len(event_store.read_stream("safety_events", limit=100)),
         "conversation_events_last_100": len(event_store.read_stream("conversations", limit=100)),
+        "document_events_last_100": len(event_store.read_stream("document_events", limit=100)),
     }

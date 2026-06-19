@@ -2,11 +2,11 @@
 
 CPU-first, GPU-ready, local-first AI platform starter.
 
-> MicroGPT is not just a tiny chatbot. It is a local cognitive engine: secure login, safety gates, memory, retrieval, MicroLake event logs, model runtime adapters, evaluation, and observability around a small local model.
+> MicroGPT is not just a tiny chatbot. It is a local cognitive engine: secure login, safety gates, model runtime adapters, memory/retrieval foundations, MicroLake event logs, evaluation, and observability around small local models.
 
 ## Current status
 
-This repository is a **Phase 0 + Phase 1 starter**.
+This repository is a **Phase 0 + Phase 1 + Phase 2 starter**.
 
 Implemented now:
 
@@ -17,7 +17,13 @@ Implemented now:
 - Maturity gate
 - Input/output safety blocker stub
 - MicroLake-style append-only JSONL audit events
-- Runtime abstraction with a safe `NoModelRuntime`
+- Runtime abstraction with safe `NoModelRuntime`
+- Optional `llama_cpp` runtime adapter through `llama-cpp-python`
+- Local JSON model registry
+- Streaming chat endpoint
+- Runtime benchmark script
+- Document identity/provenance registry with MD5 + SHA-256
+- Deleted/moved file reconciliation foundation
 - Admin maturity update endpoint
 - Basic metrics endpoint
 - Tests
@@ -26,16 +32,16 @@ Implemented now:
 
 Not implemented yet:
 
-- llama.cpp model adapter
-- Real local RAG
+- Full local RAG
 - Vector database
 - Kuzu graph layer
 - Niche evaluator scoring engine
 - Prometheus/OpenTelemetry production instrumentation
+- Production-grade safety classifier
 
-## Why the app runs without a model
+## Why the app still runs without a model
 
-Phase 1 intentionally runs even when no model is installed. This lets contributors test authentication, routing, safety, audit logging, and maturity gates before adding a local model.
+Phase 2 keeps the default runtime as `no_model`. This lets contributors test authentication, routing, safety, streaming, audit logging, document identity, and maturity gates before installing a local GGUF model.
 
 ## Requirements
 
@@ -85,7 +91,7 @@ password: microgpt-admin
 
 Change it in `.env` before sharing the repo or deploying anywhere.
 
-## Try it from the API docs
+## Try chat from the API docs
 
 1. Run the app.
 2. Open `/docs`.
@@ -99,18 +105,110 @@ Bearer YOUR_ACCESS_TOKEN
 
 6. Try `POST /chat`.
 
-## Try it with curl
+## Try streaming chat
+
+Use `POST /chat/stream` in Swagger UI or with curl:
 
 ```bash
 TOKEN=$(curl -s -X POST http://127.0.0.1:8000/auth/login \
   -H "Content-Type: application/json" \
   -d '{"username":"admin","password":"microgpt-admin"}' | python -c "import sys,json; print(json.load(sys.stdin)['access_token'])")
 
-curl -X POST http://127.0.0.1:8000/chat \
+curl -N -X POST http://127.0.0.1:8000/chat/stream \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"message":"Hello MicroGPT. What can you do right now?"}'
+  -d '{"message":"Hello MicroGPT. Stream a short answer."}'
 ```
+
+## Phase 2: run a local CPU model with llama.cpp
+
+The default mode is still safe fallback:
+
+```env
+MICROGPT_RUNTIME_MODE=no_model
+```
+
+To use a local GGUF model:
+
+```bash
+pip install -e ".[dev,llama]"
+cp models/model_registry.example.json models/model_registry.local.json
+```
+
+Then edit `.env`:
+
+```env
+MICROGPT_RUNTIME_MODE=llama_cpp
+MICROGPT_MODEL_REGISTRY_PATH=./models/model_registry.local.json
+MICROGPT_ACTIVE_MODEL_ID=qwen3-0.6b-gguf-local
+MICROGPT_LLAMA_N_THREADS=4
+MICROGPT_LLAMA_N_GPU_LAYERS=0
+```
+
+Put your GGUF file in `models/` and update `models/model_registry.local.json` so `path` matches your local file.
+
+Important: model weights are local only and gitignored.
+
+## Benchmark the runtime
+
+```bash
+python scripts/benchmark_runtime.py --prompt "Explain MicroGPT in one short paragraph." --runs 3 --max-tokens 128
+```
+
+Results are appended to:
+
+```text
+data/events/benchmark_runs.jsonl
+```
+
+## Document identity / provenance foundation
+
+This is your file-management idea implemented as a foundation before full RAG.
+
+Register a file:
+
+```bash
+python scripts/check_documents.py README.md
+```
+
+Or through the API:
+
+```text
+POST /documents/register
+```
+
+The registry stores:
+
+- original path
+- canonical path/location
+- filename
+- extension
+- size
+- modified timestamp
+- MD5
+- SHA-256
+- stable `document_id`
+- exists/missing status
+
+Check deleted or moved files:
+
+```bash
+python scripts/check_documents.py --reconcile
+```
+
+Later, Phase 4 RAG will use this to answer: **which exact document was used, did it change, and what old chat context can still help if the file disappeared?**
+
+## Runtime endpoints
+
+- `GET /runtime/status`
+- `GET /runtime/models`
+
+## Document endpoints
+
+- `POST /documents/register`
+- `GET /documents`
+- `POST /documents/reconcile`
+- `GET /documents/{document_id}/context`
 
 ## Test
 
@@ -132,7 +230,7 @@ This is a local development skeleton. It is not production-ready. Before any pub
 - Dependency license scanning
 - Evaluation report
 
-## Next milestones
+## Milestones
 
 ### Milestone 1: Secure local skeleton
 
@@ -147,11 +245,21 @@ This is a local development skeleton. It is not production-ready. Before any pub
 
 ### Milestone 2: CPU runtime
 
-- [ ] Add llama.cpp adapter
-- [ ] Add model registry loader
-- [ ] Add streaming endpoint
-- [ ] Add benchmark command
-- [ ] Test tiny CPU model
+- [x] Add llama.cpp adapter
+- [x] Add model registry loader
+- [x] Add streaming endpoint
+- [x] Add benchmark command
+- [x] Keep safe fallback when model is missing
+- [ ] Download and validate one tiny CPU model locally
+- [ ] Benchmark tiny model on target laptops
+
+### Provenance improvement added early
+
+- [x] Document identity registry
+- [x] MD5 + SHA-256 file fingerprints
+- [x] File location/canonical path tracking
+- [x] Deleted/moved file reconciliation
+- [x] Best-effort context recovery from old conversation logs
 
 ### Milestone 3: Memory MVP
 
@@ -160,18 +268,27 @@ This is a local development skeleton. It is not production-ready. Before any pub
 - [ ] Memory edit/delete/export
 - [ ] Markdown vault prototype
 
+### Milestone 4: Local RAG MVP
+
+- [ ] File ingest
+- [ ] Chunking
+- [ ] SQLite FTS5
+- [ ] Qdrant
+- [ ] Citations
+- [ ] Verifier
+
 ## Repository map
 
 ```text
 microgpt/
   api/                  FastAPI app, routers, auth, safety
-  platform/             Runtime, MicroLake, memory/cache/observability modules
+  platform/             Runtime, documents, MicroLake, memory/cache/observability modules
   datascience/          Future niche evaluator and classical ML modules
   cpp/                  Future C++ hot paths and benchmarks
   julia/                Future scientific workflows
   evals/                Safety/latency/RAG/memory evaluation sets
-  docs/                 ADRs, architecture, security, licenses
+  docs/                 ADRs, architecture, runtime, provenance, security, licenses
   data/                 Local runtime data, gitignored
-  models/               Local model files, gitignored
+  models/               Local model files, gitignored except example registry
   vault/                Local markdown memory vault, gitignored by default
 ```

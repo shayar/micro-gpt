@@ -1,42 +1,24 @@
-# Environment and secrets
-.env
-.env.local
-.env.*.local
-*.pem
-*.key
-
 # Python
 __pycache__/
 *.py[cod]
 .pytest_cache/
-.mypy_cache/
 .ruff_cache/
-.coverage
-htmlcov/
+.mypy_cache/
 .venv/
 venv/
 
-# Docker / local volumes
-qdrant_storage/
-redis_data/
+# Environment
+.env
 
-# Model files - do not commit model weights
-models/*.gguf
-models/*.bin
-models/*.safetensors
-models/*.pt
-models/*.pth
-models/*.onnx
-models/*.tflite
-
-# Generated AI outputs / logs
-outputs/
-artifacts/
-logs/
-*.log
+# Local runtime data
+/data/*
+!/data/.keepdir
+/models/*
+!/models/.keepdir
+/vault/*
+!/vault/.keepdir
 
 # OS / editor
 .DS_Store
-Thumbs.db
 .vscode/
 .idea/

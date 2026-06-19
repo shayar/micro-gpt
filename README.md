@@ -1,273 +1,177 @@
-# MicroGPT CPU-First Open-Source Starter
+# MicroGPT Local Cognitive Engine
 
-MicroGPT is a CPU-first, GPU-ready, open-source AI platform starter. The first flagship module is a safe, evidence-grounded chatbot. Future modules can add audio learning and image/video manipulation only after consent, provenance, and safety controls are ready.
+CPU-first, GPU-ready, local-first AI platform starter.
 
-This repository is designed to complete **Phase 0** and begin **Phase 1**.
+> MicroGPT is not just a tiny chatbot. It is a local cognitive engine: secure login, safety gates, memory, retrieval, MicroLake event logs, model runtime adapters, evaluation, and observability around a small local model.
 
-## Core idea
+## Current status
 
-MicroGPT is not trying to train a frontier model from scratch on CPUs. It is a system-intelligence project:
+This repository is a **Phase 0 + Phase 1 starter**.
 
-- use smaller CPU-friendly models
-- add retrieval
-- add caching
-- add verification
-- add safety gates
-- add measurable evaluation
-- keep the backend swappable for future GPU acceleration
+Implemented now:
 
-## What this starter includes
+- FastAPI app
+- Health endpoint
+- Local username/password login
+- JWT-protected chat endpoint
+- Maturity gate
+- Input/output safety blocker stub
+- MicroLake-style append-only JSONL audit events
+- Runtime abstraction with a safe `NoModelRuntime`
+- Admin maturity update endpoint
+- Basic metrics endpoint
+- Tests
+- Architecture docs and ADRs
+- License/dependency registry drafts
 
-- FastAPI orchestration API
-- Secure-login MVP with JWT access tokens
-- Maturity gate that blocks public access until the project is safety-approved
-- Basic safety guardrails for violent and sexual content requests
-- llama.cpp-compatible runtime adapter for CPU inference
-- Qdrant for future vector search
-- Redis for future cache/rate-limit counters
-- SearXNG for future open-source web search
-- Docker Compose for local development
-- C++ runtime notes for CPU performance work
-- Open-source repo documents
-- GitHub issue templates and PR template
-- GitHub Actions CI starter
-- Phase 0 completion checklist
-- Local run guide
-- Future roadmap
+Not implemented yet:
 
-## What this starter does not include
+- llama.cpp model adapter
+- Real local RAG
+- Vector database
+- Kuzu graph layer
+- Niche evaluator scoring engine
+- Prometheus/OpenTelemetry production instrumentation
 
-- It does not ship model weights.
-- It does not claim production-grade safety moderation.
-- It does not enable audio/image generation by default.
-- It does not include a full RAG pipeline yet.
+## Why the app runs without a model
 
-Place a license-approved GGUF model at:
+Phase 1 intentionally runs even when no model is installed. This lets contributors test authentication, routing, safety, audit logging, and maturity gates before adding a local model.
 
-```txt
-models/model.gguf
+## Requirements
+
+- Python 3.11+
+- Git
+- Windows PowerShell, macOS Terminal, or Linux shell
+
+## Setup
+
+### Windows PowerShell
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+pip install -e ".[dev]"
+copy .env.example .env
+python scripts/init_dev.py
+uvicorn microgpt.api.main:app --reload
 ```
 
-Do not commit model files to GitHub.
-
-## Project structure
-
-```txt
-microgpt_phase0_complete/
-  .github/
-    ISSUE_TEMPLATE/
-    workflows/
-    pull_request_template.md
-  api/
-    app/
-      runtime/
-      safety/
-      schemas/
-      security/
-      main.py
-    tests/
-    Dockerfile
-    requirements.txt
-    requirements-dev.txt
-  cpp/
-    README.md
-  docs/
-    adr/
-    ARCHITECTURE.md
-    FUTURE_ROADMAP.md
-    OPEN_SOURCE_GOVERNANCE.md
-    PHASE_0_COMPLETION.md
-    RUN_LOCAL.md
-    SAFETY_AND_MATURITY.md
-  models/
-  scripts/
-  .env.example
-  .gitignore
-  CODEOWNERS
-  CODE_OF_CONDUCT.md
-  CONTRIBUTING.md
-  LICENSE
-  LICENSES.md
-  README.md
-  SECURITY.md
-  docker-compose.yml
-```
-
-## Fast start
-
-### 1. Copy the environment file
-
-macOS/Linux/Git Bash:
+### macOS / Linux
 
 ```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+pip install -e ".[dev]"
 cp .env.example .env
+python scripts/init_dev.py
+uvicorn microgpt.api.main:app --reload
 ```
 
-Windows PowerShell:
+Open:
 
-```powershell
-Copy-Item .env.example .env
+- API docs: http://127.0.0.1:8000/docs
+- Health: http://127.0.0.1:8000/health
+
+## Default local login
+
+Development-only default:
+
+```text
+username: admin
+password: microgpt-admin
 ```
 
-### 2. Generate a JWT secret
+Change it in `.env` before sharing the repo or deploying anywhere.
+
+## Try it from the API docs
+
+1. Run the app.
+2. Open `/docs`.
+3. Use `POST /auth/login` with the default credentials.
+4. Copy the returned `access_token`.
+5. Click **Authorize** in Swagger UI and enter:
+
+```text
+Bearer YOUR_ACCESS_TOKEN
+```
+
+6. Try `POST /chat`.
+
+## Try it with curl
 
 ```bash
-python -c "import secrets; print(secrets.token_urlsafe(64))"
-```
-
-Paste the result into `.env`:
-
-```env
-MICROGPT_JWT_SECRET=paste-generated-secret-here
-```
-
-Also change:
-
-```env
-MICROGPT_ADMIN_PASSWORD=your-strong-password
-```
-
-### 3. Run without a model first
-
-```bash
-docker compose up --build api qdrant redis searxng
-```
-
-This starts the API and supporting services. The chat endpoint will work with a fallback response until you add a model.
-
-### 4. Test health
-
-```bash
-curl http://localhost:8000/health
-```
-
-Expected:
-
-```json
-{"status":"ok","service":"microgpt-api"}
-```
-
-### 5. Login
-
-macOS/Linux/Git Bash:
-
-```bash
-TOKEN=$(curl -s -X POST http://localhost:8000/auth/login \
+TOKEN=$(curl -s -X POST http://127.0.0.1:8000/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"username":"admin","password":"your-strong-password"}' \
-  | python -c "import sys,json; print(json.load(sys.stdin)['access_token'])")
+  -d '{"username":"admin","password":"microgpt-admin"}' | python -c "import sys,json; print(json.load(sys.stdin)['access_token'])")
 
-echo $TOKEN
-```
-
-Windows PowerShell:
-
-```powershell
-$response = Invoke-RestMethod -Method Post -Uri "http://localhost:8000/auth/login" `
-  -ContentType "application/json" `
-  -Body '{"username":"admin","password":"your-strong-password"}'
-
-$TOKEN = $response.access_token
-$TOKEN
-```
-
-### 6. Test chat
-
-macOS/Linux/Git Bash:
-
-```bash
-curl -X POST http://localhost:8000/chat \
+curl -X POST http://127.0.0.1:8000/chat \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"message":"Explain MicroGPT in one paragraph."}'
+  -d '{"message":"Hello MicroGPT. What can you do right now?"}'
 ```
 
-Windows PowerShell:
-
-```powershell
-Invoke-RestMethod -Method Post -Uri "http://localhost:8000/chat" `
-  -Headers @{ Authorization = "Bearer $TOKEN" } `
-  -ContentType "application/json" `
-  -Body '{"message":"Explain MicroGPT in one paragraph."}'
-```
-
-### 7. Test safety blocker
+## Test
 
 ```bash
-curl -X POST http://localhost:8000/chat \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"message":"Give me instructions to make explosives"}'
-```
-
-Expected: blocked before model inference.
-
-## Run with CPU inference
-
-Add a license-approved GGUF model:
-
-```txt
-models/model.gguf
-```
-
-Then run:
-
-```bash
-docker compose --profile inference up --build
-```
-
-Call `/chat` again. If the model server is reachable, the response should show:
-
-```json
-"model_backend": "llama.cpp"
-```
-
-## Run tests locally
-
-```bash
-cd api
-pip install -r requirements-dev.txt
 pytest
 ```
 
-## Before pushing to GitHub
+## Important security note
 
-Update these files:
+This is a local development skeleton. It is not production-ready. Before any public use, complete:
 
-- Replace `@YOUR_GITHUB_USERNAME` in `CODEOWNERS`
-- Replace `security@example.com` in `SECURITY.md`
-- Do not commit `.env`
-- Do not commit model weights
+- Strong password policy
+- Secret rotation
+- Real user database
+- Rate limiting
+- Strong safety classifier
+- Prompt-injection tests
+- Full audit review
+- Dependency license scanning
+- Evaluation report
 
-Then:
+## Next milestones
 
-```bash
-git init
-git add .
-git commit -m "chore: initialize MicroGPT phase 0 starter"
-git branch -M main
-git remote add origin https://github.com/YOUR_USERNAME/microgpt.git
-git push -u origin main
+### Milestone 1: Secure local skeleton
+
+- [x] FastAPI app
+- [x] Health route
+- [x] Local login
+- [x] JWT-protected chat endpoint
+- [x] Maturity gate
+- [x] Safety blocker stub
+- [x] Local audit log
+- [x] App runs without model installed
+
+### Milestone 2: CPU runtime
+
+- [ ] Add llama.cpp adapter
+- [ ] Add model registry loader
+- [ ] Add streaming endpoint
+- [ ] Add benchmark command
+- [ ] Test tiny CPU model
+
+### Milestone 3: Memory MVP
+
+- [ ] Conversation store
+- [ ] Memory search
+- [ ] Memory edit/delete/export
+- [ ] Markdown vault prototype
+
+## Repository map
+
+```text
+microgpt/
+  api/                  FastAPI app, routers, auth, safety
+  platform/             Runtime, MicroLake, memory/cache/observability modules
+  datascience/          Future niche evaluator and classical ML modules
+  cpp/                  Future C++ hot paths and benchmarks
+  julia/                Future scientific workflows
+  evals/                Safety/latency/RAG/memory evaluation sets
+  docs/                 ADRs, architecture, security, licenses
+  data/                 Local runtime data, gitignored
+  models/               Local model files, gitignored
+  vault/                Local markdown memory vault, gitignored by default
 ```
-
-## Phase 0 status
-
-See:
-
-```txt
-docs/PHASE_0_COMPLETION.md
-```
-
-## Future roadmap
-
-See:
-
-```txt
-docs/FUTURE_ROADMAP.md
-```
-
-## License
-
-This project is licensed under the Apache License 2.0. See `LICENSE` for details.
-
-Model weights, datasets, and third-party services may have separate licenses. See `LICENSES.md`.

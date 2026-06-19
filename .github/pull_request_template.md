@@ -1,47 +1,14 @@
-## Summary
+## What changed?
 
-What does this PR change?
 
-## Type of change
+## Why?
 
-- [ ] Feature
-- [ ] Bug fix
-- [ ] Documentation
-- [ ] Test
-- [ ] Refactor
-- [ ] Safety/security
-- [ ] Performance
 
 ## Checklist
 
-- [ ] I tested this locally.
-- [ ] I added or updated tests.
-- [ ] I updated documentation.
-- [ ] I checked licensing impact.
-- [ ] I did not commit model weights, secrets, or private data.
-- [ ] I considered safety impact.
-
-## Safety impact
-
-Does this PR affect authentication, maturity gates, model inference, content safety, retrieval, audio, image/video, consent, or provenance?
-
-- [ ] No
-- [ ] Yes
-
-If yes, explain:
-
-```txt
-Write safety notes here.
-```
-
-## Testing notes
-
-Commands run:
-
-```bash
-# paste test commands here
-```
-
-## Screenshots or logs
-
-Optional.
+- [ ] Tests added/updated
+- [ ] `LICENSES.md` updated if dependencies changed
+- [ ] `MODEL_REGISTRY.md` updated if model usage changed
+- [ ] ADR added/updated if architecture changed
+- [ ] No secrets, model weights, private data, or local runtime files committed
+- [ ] Safety impact considered

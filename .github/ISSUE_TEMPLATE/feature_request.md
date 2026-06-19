@@ -1,46 +1,17 @@
 ---
 name: Feature request
-about: Suggest a feature for MicroGPT
-title: "feat: "
+about: Suggest a MicroGPT feature
 labels: enhancement
-assignees: ""
 ---
 
-## Feature summary
+## Feature
 
-What should be added?
 
-## Problem
+## Why it matters
 
-What problem does this solve?
 
-## Proposed solution
+## Proposed design
 
-Describe the solution.
 
-## Alternatives considered
+## Safety / privacy / license considerations
 
-Any simpler option?
-
-## Safety and security impact
-
-Could this feature affect:
-
-- [ ] Authentication
-- [ ] Maturity gate
-- [ ] Safety policy
-- [ ] Model inference
-- [ ] Web search
-- [ ] Retrieval
-- [ ] Audio
-- [ ] Image/video
-- [ ] Consent/provenance
-- [ ] None
-
-Explain:
-
-## Acceptance criteria
-
-- [ ]
-- [ ]
-- [ ]

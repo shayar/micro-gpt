@@ -93,3 +93,72 @@ def test_document_register_and_context(tmp_path: Path) -> None:
     )
     assert context.status_code == 200
     assert context.json()["document"]["file_name"] == "sample.txt"
+
+
+def test_system_specs() -> None:
+    token = _token()
+    response = client.get("/system/specs", headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 200
+    body = response.json()
+    assert "cpu_brand" in body
+    assert "cpu_threads" in body
+    assert "python" in body
+
+
+def test_runtime_recommendations() -> None:
+    token = _token()
+    response = client.get("/runtime/recommendations", headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 200
+    body = response.json()
+    assert body["recommendation"]["recommended"]["model_id"] == "qwen3-0.6b-q4-k-m-local"
+
+
+def test_runtime_status_includes_cli_settings() -> None:
+    token = _token()
+    response = client.get("/runtime/status", headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 200
+    llama_settings = response.json()["llama_settings"]
+    assert "cli_path" in llama_settings
+    assert "cli_timeout_seconds" in llama_settings
+
+
+def test_llama_cli_output_cleaner() -> None:
+    from microgpt.platform.runtime.llama_cli_adapter import LlamaCliRuntime
+
+    raw = """Loading model...
+
+> Explain AI to a kid.
+
+AI is like a helpful computer brain.
+[ Prompt: 4.1 t/s | Generation: 20.9 t/s ]"""
+    cleaned = LlamaCliRuntime._clean_output(raw, "Explain AI to a kid.")
+    assert cleaned == "AI is like a helpful computer brain."
+
+
+def test_llama_cli_output_cleaner_removes_thinking_block() -> None:
+    from microgpt.platform.runtime.llama_cli_adapter import LlamaCliRuntime
+
+    raw = "> Tell me about math\n[Start thinking]\nI should plan the answer.\n[End thinking]\nMath is the study of patterns, numbers, and shapes."
+    cleaned = LlamaCliRuntime._clean_output(raw, "Tell me about math")
+    assert cleaned == "Math is the study of patterns, numbers, and shapes."
+
+
+def test_llama_cli_output_cleaner_removes_one_shot_noise() -> None:
+    from microgpt.platform.runtime.llama_cli_adapter import LlamaCliRuntime
+
+    raw = """Loading model...
+
+Assistant: Math is the study of numbers, shapes, and patterns.
+Exiting....
+"""
+    cleaned = LlamaCliRuntime._clean_output(raw, "Tell me about math")
+    assert cleaned == "Math is the study of numbers, shapes, and patterns."
+
+
+def test_llama_cli_prompt_wrapper_contains_user_message() -> None:
+    from microgpt.platform.runtime.llama_cli_adapter import LlamaCliRuntime
+
+    prompt = LlamaCliRuntime._format_prompt("Explain AI")
+    assert "You are MicroGPT" in prompt
+    assert "User: Explain AI" in prompt
+    assert prompt.rstrip().endswith("Assistant:")

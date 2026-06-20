@@ -9,6 +9,26 @@ from microgpt.platform.runtime.errors import RuntimeUnavailableError
 from microgpt.platform.runtime.model_registry import ModelRegistry, ModelSpec
 
 
+def _friendly_llama_error(exc: Exception) -> str:
+    message = str(exc)
+    text = f"{exc.__class__.__name__}: {message}"
+    if "0xc000001d" in message or "-1073741795" in message:
+        return (
+            "llama-cpp-python failed while loading the GGUF model with Windows error 0xc000001d "
+            "(illegal CPU instruction). Your machine may support AVX2/FMA, but the installed native wheel "
+            "can still be incompatible with your Windows/Python/runtime combination. Try a CPU-safe rebuild "
+            "with GGML_NATIVE=OFF, or use the standalone llama.cpp CLI/server adapter. Raw error: "
+            f"{text}"
+        )
+    if "nmake" in message or "CMAKE_C_COMPILER" in message or "CMAKE_CXX_COMPILER" in message:
+        return (
+            "llama-cpp-python tried to build from source but Windows C++ build tools were not available. "
+            "Use Python 3.12 with a prebuilt CPU wheel, or install Visual Studio Build Tools with Desktop "
+            f"development with C++. Raw error: {text}"
+        )
+    return f"llama-cpp-python could not load the configured model. Raw error: {text}"
+
+
 class LlamaCppRuntime(RuntimeAdapter):
     """CPU-first llama.cpp adapter through llama-cpp-python.
 
@@ -29,16 +49,20 @@ class LlamaCppRuntime(RuntimeAdapter):
             from llama_cpp import Llama
         except Exception as exc:  # pragma: no cover - optional dependency path
             raise RuntimeUnavailableError(
-                "llama-cpp-python is not installed. Install with: pip install -e '.[llama]'"
+                "llama-cpp-python is not installed in this environment. "
+                "Install a compatible CPU wheel or keep MICROGPT_RUNTIME_MODE=no_model."
             ) from exc
 
-        self._llm = Llama(
-            model_path=str(model_path),
-            n_ctx=settings.llama_n_ctx,
-            n_threads=settings.llama_n_threads,
-            n_gpu_layers=settings.llama_n_gpu_layers,
-            verbose=settings.llama_verbose,
-        )
+        try:
+            self._llm = Llama(
+                model_path=str(model_path),
+                n_ctx=settings.llama_n_ctx,
+                n_threads=settings.llama_n_threads,
+                n_gpu_layers=settings.llama_n_gpu_layers,
+                verbose=settings.llama_verbose,
+            )
+        except Exception as exc:  # pragma: no cover - depends on native runtime/hardware
+            raise RuntimeUnavailableError(_friendly_llama_error(exc)) from exc
 
     @property
     def runtime_name(self) -> str:

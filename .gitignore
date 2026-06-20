@@ -5,6 +5,7 @@ __pycache__/
 .ruff_cache/
 .mypy_cache/
 .venv/
+*.egg-info/
 venv/
 
 # Environment
@@ -18,6 +19,7 @@ venv/
 /models/*
 !/models/.keepdir
 !/models/model_registry.example.json
+/models/model_registry.local.json
 /vault/*
 !/vault/.keepdir
 
@@ -25,6 +27,3 @@ venv/
 .DS_Store
 .vscode/
 .idea/
-
-
-*.egg-info/

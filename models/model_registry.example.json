@@ -1,17 +1,30 @@
 {
   "models": [
     {
-      "model_id": "qwen3-0.6b-gguf-local",
-      "name": "Qwen3 0.6B GGUF local file",
-      "runtime": "llama_cpp",
-      "path": "qwen3-0.6b-q4_k_m.gguf",
+      "model_id": "qwen3-0.6b-q4-k-m-local",
+      "name": "Qwen3 0.6B Q4_K_M GGUF local file",
+      "runtime": "llama_cli",
+      "path": "local/Qwen_Qwen3-0.6B-Q4_K_M.gguf",
       "license": "Apache-2.0 candidate - revalidate exact model card before release",
-      "source": "https://huggingface.co/Qwen/Qwen3-0.6B-GGUF",
+      "source": "https://huggingface.co/bartowski/Qwen_Qwen3-0.6B-GGUF",
       "revision": "pin-exact-revision-before-release",
-      "quantization": "Q4_K_M example placeholder",
+      "quantization": "Q4_K_M",
       "context_length": 32768,
       "status": "candidate",
-      "notes": "Do not commit the GGUF file. Copy this file to model_registry.local.json and update path/revision after downloading a validated local model."
+      "notes": "First CPU smoke-test model for MicroGPT. Uses standalone llama-cli by default for Windows-friendly local inference. Do not commit GGUF files. Copy this file to model_registry.local.json after downloading the model locally."
+    },
+    {
+      "model_id": "qwen3-0.6b-q4-k-m-python-local",
+      "name": "Qwen3 0.6B Q4_K_M GGUF local file via llama-cpp-python",
+      "runtime": "llama_cpp",
+      "path": "local/Qwen_Qwen3-0.6B-Q4_K_M.gguf",
+      "license": "Apache-2.0 candidate - revalidate exact model card before release",
+      "source": "https://huggingface.co/bartowski/Qwen_Qwen3-0.6B-GGUF",
+      "revision": "pin-exact-revision-before-release",
+      "quantization": "Q4_K_M",
+      "context_length": 32768,
+      "status": "candidate",
+      "notes": "Optional Python binding version. Use this only when llama-cpp-python loads cleanly on the target machine."
     }
   ]
 }

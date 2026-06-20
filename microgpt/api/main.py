@@ -4,7 +4,7 @@ from fastapi import FastAPI
 
 from microgpt.api.auth.security import ensure_dev_user_file
 from microgpt.api.config import get_settings
-from microgpt.api.routers import admin, auth, chat, documents, health, metrics, runtime
+from microgpt.api.routers import admin, auth, chat, documents, health, metrics, runtime, system
 from microgpt.platform.microlake.events import event_store
 
 
@@ -20,7 +20,7 @@ def create_app() -> FastAPI:
     settings.data_dir.mkdir(parents=True, exist_ok=True)
     app = FastAPI(
         title=settings.app_name,
-        version="0.2.0-phase2",
+        version="0.2.1-phase2-robust",
         description="MicroGPT Phase 2: secure local skeleton plus CPU runtime adapter, streaming, model registry, and document identity provenance.",
         lifespan=lifespan,
     )
@@ -29,6 +29,7 @@ def create_app() -> FastAPI:
     app.include_router(chat.router)
     app.include_router(documents.router)
     app.include_router(runtime.router)
+    app.include_router(system.router)
     app.include_router(admin.router)
     app.include_router(metrics.router)
     return app

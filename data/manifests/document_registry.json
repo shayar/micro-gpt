@@ -1,19 +1,19 @@
 {
   "version": 1,
-  "updated_at": "2026-06-19T15:35:33.649142+00:00",
+  "updated_at": "2026-06-20T03:47:42.157606+00:00",
   "documents": {
     "bda39ef1ff2897ad46b36ec8a2e2cedb": {
       "document_id": "bda39ef1ff2897ad46b36ec8a2e2cedb",
-      "path": "/tmp/pytest-of-root/pytest-0/test_document_register_and_con0/sample.txt",
-      "canonical_path": "/tmp/pytest-of-root/pytest-0/test_document_register_and_con0/sample.txt",
+      "path": "/tmp/pytest-of-root/pytest-3/test_document_register_and_con0/sample.txt",
+      "canonical_path": "/tmp/pytest-of-root/pytest-3/test_document_register_and_con0/sample.txt",
       "file_name": "sample.txt",
       "extension": ".txt",
       "size_bytes": 31,
-      "modified_time_utc": "2026-06-19T15:35:33.645340+00:00",
+      "modified_time_utc": "2026-06-20T03:47:42.154417+00:00",
       "md5": "955f5f245f47b6bbcaa4f5c776a22950",
       "sha256": "651786c327c141429e56237688df93ea12dee0181caa9b13fbde215af9f4adaa",
       "exists": true,
-      "last_seen_at": "2026-06-19T15:35:33.649138+00:00"
+      "last_seen_at": "2026-06-20T03:47:42.157602+00:00"
     }
   }
 }

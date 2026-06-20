@@ -1,47 +1,56 @@
-# Phase 2: CPU Runtime
+# Phase 2 CPU Runtime
 
-Phase 2 adds the foundation for local CPU inference while keeping the project runnable without a model.
+Phase 2 adds a runtime boundary so MicroGPT can run without hard-coding a single model backend.
 
-## Modes
+Implemented adapters:
 
-### `no_model`
-Default. Used for auth, safety, provenance, streaming, and audit testing.
+- `no_model`: safe fallback for auth, safety, provenance, and API testing.
+- `llama_cpp`: optional `llama-cpp-python` adapter for local GGUF files.
 
-```env
-MICROGPT_RUNTIME_MODE=no_model
+## Phase 2.1 robustness update
+
+This version adds:
+
+- automatic `.env` loading through `python-dotenv`;
+- safer `/runtime/status` diagnostics;
+- fallback when native llama loading fails;
+- model file existence and size reporting;
+- `/system/specs` and `/runtime/recommendations` foundations for first-run model selection.
+
+## Recommended Windows install path
+
+```powershell
+pip install -e ".[dev]"
+pip install --prefer-binary llama-cpp-python==0.3.30 --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cpu
 ```
 
-### `llama_cpp`
-Uses the optional `llama-cpp-python` adapter to load a local GGUF model.
+Avoid installing `[dev,llama]` first on Windows if `llama-cpp-python` tries to compile from source.
 
-```env
-MICROGPT_RUNTIME_MODE=llama_cpp
-MICROGPT_MODEL_REGISTRY_PATH=./models/model_registry.local.json
-MICROGPT_ACTIVE_MODEL_ID=qwen3-0.6b-gguf-local
-```
+## Runtime status behavior
 
-Install optional dependency:
+`GET /runtime/status` should not crash the API. It reports:
 
-```bash
-pip install -e ".[dev,llama]"
-```
+- configured runtime mode;
+- active runtime;
+- fallback reason;
+- model registry path;
+- active model metadata;
+- model file existence and size;
+- llama runtime settings.
 
-Copy the example registry:
+If native model loading fails, the endpoint returns `active_runtime: no_model` with a detailed `fallback_reason`.
 
-```bash
-cp models/model_registry.example.json models/model_registry.local.json
-```
+## Known Windows error: 0xc000001d
 
-Then update the local model path and exact revision/license validation notes.
+`Windows Error 0xc000001d` usually means the native llama runtime attempted an illegal CPU instruction. Even if the CPU reports AVX2/FMA, the Python wheel may still be incompatible with the installed Python/Windows/runtime combination.
 
-## Benchmark
+Short-term mitigation:
 
-```bash
-python scripts/benchmark_runtime.py --prompt "Explain MicroGPT" --runs 3 --max-tokens 128
-```
+- keep `MICROGPT_RUNTIME_FALLBACK_ENABLED=true`;
+- use Python 3.12;
+- install the CPU wheel from the llama-cpp-python wheel index;
+- test standalone llama.cpp.
 
-Benchmark results are appended to `data/events/benchmark_runs.jsonl`.
+Future improvement:
 
-## Streaming
-
-Use `POST /chat/stream` from Swagger UI or curl. The endpoint streams plain text chunks.
+- add a `llama_cli` or `llama_server` adapter so MicroGPT can call standalone llama.cpp without relying only on Python native bindings.

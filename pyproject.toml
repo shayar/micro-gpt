@@ -1,7 +1,7 @@
 [project]
 name = "microgpt-local"
-version = "0.2.0"
-description = "MicroGPT Local Cognitive Engine Phase 2 starter"
+version = "0.2.3"
+description = "MicroGPT Local Cognitive Engine Phase 2.3 starter"
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"
@@ -12,7 +12,9 @@ dependencies = [
   "fastapi>=0.116,<1.0",
   "uvicorn>=0.35,<1.0",
   "pydantic>=2.11,<3.0",
-  "PyJWT>=2.10,<3.0"
+  "PyJWT>=2.10,<3.0",
+  "python-dotenv>=1.0,<2.0",
+  "py-cpuinfo>=9.0,<10.0"
 ]
 
 [project.optional-dependencies]

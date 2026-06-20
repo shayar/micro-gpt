@@ -22,7 +22,7 @@ class NoModelRuntime(RuntimeAdapter):
         text = (
             "MicroGPT Phase 2 runtime is ready, but no local GGUF model is currently loaded. "
             "You can keep testing auth, safety, provenance, streaming, and audit logs. "
-            "Set MICROGPT_RUNTIME_MODE=llama_cpp and configure a model registry entry to use CPU inference."
+            "Set MICROGPT_RUNTIME_MODE=llama_cli or llama_cpp and configure a model registry entry to use CPU inference."
             f"{details}"
         )
         return GenerationResult(
